@@ -1,4 +1,24 @@
+const Spec = [
+
+    //NUMBER
+    [/\d+/g, "NUMBER"],
+    //STRING
+    [/"([^"\\]|\\.)*"/g, "STRING"],
+    //IDENTIFIER
+    [/[a-zA-Z_]\w*/g, "IDENTIFIER"],
+    //WHITESPACE
+    [/\s+/g, "WHITESPACE"],
+    //NEWLINE
+    [/\n/g, "NEWLINE"],
+    //COMMENT
+    [/\/\/.*/g, "COMMENT"],
+    //OPERATOR
+    [/[-+*\/=<>!]/g, "OPERATOR"]
+
+
+]
 class Tokenizer {
+
 
     init(string) {
         this._string = string;
@@ -6,52 +26,26 @@ class Tokenizer {
         this.tokenIndex = 0;
     }
     getNextToken() {
-        //if not has more tokens
+        //if no more tokens
         if (!this.hasmoreTokens()) {
+            //get next token    
             return null;
         }
-        //get next token
-        const currentString = this._string.slice(this.tokenIndex);
-       
-        //if token is number
-        if (!Number.isNaN(Number(currentString[0]))) {
-            let result = '';
-            //while token is number
-            while (!Number.isNaN(Number(currentString[this.tokenIndex]))) {
-                //add token to result
-                result += currentString[this.tokenIndex];
-              
-                //increment token index
-                this.tokenIndex++;
-            }
-            //return result
-            return {
-                type: 'NUMBER',
-                value: result
-            };
-        }
+        const string = this._string.slice(this.tokenIndex);
 
-        //STRING
-        if (currentString[0] === '"') {
-            let result = '';
-            //while token is string
-            do{
-                //add token to result
-                result += currentString[this.tokenIndex];
-                //increment token index
-                this.tokenIndex++;
-            } while (currentString[this.tokenIndex] !== '"');
-            //update token index
-            this.tokenIndex++;
-            //return result
+
+        for (const [regexp, tokenType] of Spec) {
+            let matched = this._match(regexp, string);
+            if (matched == null) {
+                continue;
+            }
             return {
-                type: 'STRING',
-                value: result
-            };
+                type: tokenType,
+                value: matched
+            }
+
         }
         return null;
-
-
 
     }
     // is end of the file
@@ -63,7 +57,22 @@ class Tokenizer {
         return this.tokenIndex < this._string.length;
     }
 
+    /**
+       * Matches the string to regexp and returns the matched result.
+       */
+    _match(regexp, string) {
+        let matched = regexp.exec(string);
+        if (matched == null) {
+            return null;
+        }
 
+        //update tokeninde
+        this.tokenIndex += matched[0].length;
+        //return
+        return matched[0];
+
+
+    }
 
 
 }
